@@ -1,0 +1,99 @@
+package database
+
+import (
+	"database/sql"
+	"log"
+	"time"
+
+	_ "github.com/mattn/go-sqlite3"
+)
+
+var DB *sql.DB
+
+func InitDB(filepath string) {
+	var err error
+	DB, err = sql.Open("sqlite3", filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	
+	DB.SetMaxOpenConns(1) 
+	DB.SetConnMaxLifetime(time.Minute * 10)
+
+	// PRAGMA settings: foreign keys must be enabled per-connection; easiest: exec now (works for the connection used)
+	_, err = DB.Exec("PRAGMA foreign_keys = ON;")
+	if err != nil {
+		log.Fatal("failed to enable foreign keys:", err)
+	}
+	// optional: busy timeout to reduce "database is locked" errors
+	_, _ = DB.Exec("PRAGMA busy_timeout = 5000;") // milliseconds
+
+	schema := `
+	CREATE TABLE IF NOT EXISTS users (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		username TEXT NOT NULL,
+		email TEXT NOT NULL UNIQUE,
+		password_hash TEXT NOT NULL,
+		created_at DATETIME DEFAULT (datetime('now'))
+	);
+
+	CREATE TABLE IF NOT EXISTS sessions (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		token TEXT NOT NULL UNIQUE,
+		user_id INTEGER NOT NULL,
+		expires_at DATETIME NOT NULL,
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+	);
+
+	CREATE TABLE IF NOT EXISTS posts (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		title TEXT NOT NULL,
+		body TEXT NOT NULL,
+		created_at DATETIME DEFAULT (datetime('now')),
+		updated_at DATETIME DEFAULT (datetime('now')),
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+	);
+
+	CREATE TABLE IF NOT EXISTS comments (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		post_id INTEGER NOT NULL,
+		user_id INTEGER NOT NULL,
+		parent_comment_id INTEGER,
+		body TEXT NOT NULL,
+		created_at DATETIME DEFAULT (datetime('now')),
+		FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE,
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY(parent_comment_id) REFERENCES comments(id) ON DELETE CASCADE
+	);
+
+	CREATE TABLE IF NOT EXISTS likes (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		post_id INTEGER,
+		comment_id INTEGER,
+		kind INTEGER NOT NULL, -- 1 = like, -1 = dislike (toggle)
+		created_at DATETIME DEFAULT (datetime('now')),
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE,
+		FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE
+	);
+
+	-- Indices for performance
+	CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id);
+	CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
+	CREATE INDEX IF NOT EXISTS idx_likes_post ON likes(post_id);
+	CREATE INDEX IF NOT EXISTS idx_likes_comment ON likes(comment_id);
+	CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
+
+	-- Partial unique indexes to prevent duplicate likes for same target
+	CREATE UNIQUE INDEX IF NOT EXISTS uidx_likes_user_post ON likes(user_id, post_id) WHERE post_id IS NOT NULL;
+	CREATE UNIQUE INDEX IF NOT EXISTS uidx_likes_user_comment ON likes(user_id, comment_id) WHERE comment_id IS NOT NULL;
+	`
+
+	_, err = DB.Exec(schema)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
