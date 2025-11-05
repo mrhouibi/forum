@@ -5,22 +5,20 @@ import (
 	"net/http"
 	"time"
 
-	"forum/database"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		if err := templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": ""}); err != nil {
-			http.Error(w, "server error", http.StatusInternalServerError)
-		}
+
+		RenderTemplate(w, "login.html", map[string]string{"Error": ""})
+
 		return
 
 	case http.MethodPost:
 		if err := r.ParseForm(); err != nil {
-			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Invalid form"})
+			RenderTemplate(w, "login.html", map[string]string{"Error": "Invalid form"})
 			return
 		}
 
@@ -33,21 +31,22 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 		var userID int64
 		var passwordHash string
-		err := database.DB.QueryRow("SELECT id, password_hash FROM users WHERE email = ?", email).Scan(&userID, &passwordHash)
+		err := DB.QueryRow("SELECT id, password_hash FROM users WHERE email = ?", email).Scan(&userID, &passwordHash)
 		if err == sql.ErrNoRows {
 			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Invalid email or password"})
 			return
 		}
 		if err != nil {
-			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Database error"})
+			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "database error"})
 			return
 		}
-
 		if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)); err != nil {
 			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Invalid email or password"})
 			return
 		}
+		checkuser(userID)
 
+		
 		token := generateRandomToken()
 		if token == "" {
 			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Failed to create session"})
@@ -55,7 +54,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		exp := time.Now().Add(24 * time.Hour)
 
-		_, err = database.DB.Exec("INSERT INTO sessions(token, user_id, expires_at) VALUES (?, ?, ?)", token, userID, exp.Format("2006-01-02 15:04:05"))
+		_, err = DB.Exec("INSERT INTO sessions(token, user_id, expires_at) VALUES (?, ?, ?)", token, userID, exp.Format("2006-01-02 15:04:05"))
 		if err != nil {
 			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Failed to create session"})
 			return
@@ -70,7 +69,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			SameSite: http.SameSiteLaxMode,
 		})
 
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/post", http.StatusSeeOther)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

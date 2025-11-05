@@ -23,7 +23,7 @@ func IsSafeTemplateName(name string) bool {
 	return matched
 }
 
-func RenderTemplate(w http.ResponseWriter, name string, data interface{}) {
+func RenderTemplate(w http.ResponseWriter, name string, data any) {
 	if templates == nil {
 		http.Error(w, "Templates not loaded", http.StatusInternalServerError)
 		return

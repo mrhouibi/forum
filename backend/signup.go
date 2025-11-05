@@ -2,11 +2,10 @@ package backend
 
 import (
 	"crypto/rand"
+	"fmt"
 	"net/http"
 	"regexp"
 	"time"
-
-	"forum/database"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -30,7 +29,9 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		username := r.FormValue("username")
 		email := r.FormValue("email")
 		password := r.FormValue("password")
-
+		fmt.Println(username)
+		fmt.Println(email)
+		fmt.Println(password)
 		// validations
 		if username == "" || email == "" || password == "" {
 			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "All fields are required"})
@@ -46,7 +47,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var exists int
-		err := database.DB.QueryRow("SELECT COUNT(1) FROM users WHERE email = ?", email).Scan(&exists)
+		err := DB.QueryRow("SELECT COUNT(1) FROM users WHERE email = ?", email).Scan(&exists)
 		if err != nil {
 			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Database error"})
 			return
@@ -62,7 +63,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		tx, err := database.DB.Begin()
+		tx, err := DB.Begin()
 		if err != nil {
 			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Server error"})
 			return
@@ -121,6 +122,7 @@ func generateRandomToken() string {
 	}
 	return hexEncode(b)
 }
+
 func hexEncode(b []byte) string {
 	const hexChars = "0123456789abcdef"
 	out := make([]byte, len(b)*2)

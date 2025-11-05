@@ -1,0 +1,154 @@
+
+body {
+font-family: Arial, sans-serif;
+background-color: #f4f5f7;
+/* display: inline;
+justify-content: center;
+align-items: center; */
+height: 100vh;
+}
+.login-box {
+
+margin: 10% auto;
+background: white;
+padding: 2rem;
+border-radius: 12px;
+box-shadow: 0 0 15px rgba(0,0,0,0.1);
+width: 40%;
+
+}
+h2 {
+text-align: center;
+margin-bottom: 1rem;
+}
+input[type="email"], input[type="password"], input[type = "name"] {
+width: 100%;
+padding: 10px;
+margin-bottom: 1rem;
+border: 1px solid #ccc;
+border-radius: 6px;
+font-size: 14px;
+}
+form{
+display: inline;
+justify-items: center;
+align-items: center;
+
+}
+
+.Create{
+
+display: flex;
+align-content: center;
+justify-content: center;
+text-align: center;
+border-radius: 2px;
+margin: auto;
+width: 30%;
+ }
+button {
+ width: 100%;
+padding: 10px;
+background-color: #007BFF;
+ color: white;
+ border: none;
+ border-radius: 6px;
+ cursor: pointer;
+ font-size: 16px;
+ }
+ button:hover {
+background-color: #0056b3;
+ }
+ .error {
+color: red;
+text-align: center;
+margin-bottom: 1rem;
+ }
+ .link {
+text-align: center;
+margin-top: 1rem;
+ }
+ .link a {
+color: #007BFF;
+text-decoration: none;
+ }
+  h1, h2 {
+    
+ color: #333;
+  }
+
+  a {
+ text-decoration: none;
+ color: #0066cc;
+  }
+  .bar{
+ /* background-color: #FCFCFC; */
+ padding: 15px;
+ text-align: right;
+  }
+
+  .bar-link{
+ margin-left: 15px;
+ font-weight: bold;  /* make text bold */
+ padding: 6px 12px;
+  }
+  .bar-link:hover {
+ color: #607e9c;
+ }
+ .container{
+  
+  display: flex;
+  margin: 35px;
+  gap: 20px;
+  width: 100%;
+  height: auto;
+ }
+ .allpost{
+  display: inline;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  box-sizing: border-box;
+ }
+ .post{
+  margin: 20px 20px;
+  /* display: inline; */
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 120%;
+  max-width: 125%;
+  min-height: 30%;
+  
+   box-sizing: border-box;
+  /* max-width: 300; */
+  text-align: center;
+  
+ }
+ .filter{
+margin: 20px 20px;
+  /* display: inline; */
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 35%;
+  max-width: 60%;
+min-height: 30%;
+height: auto;
+  /* max-width: 300px; */
+  text-align: center;
+
+
+ }
+ pre{
+  white-space: pre-wrap;
+  word-wrap: break-word ;
+ }
+ .post:hover{
+  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+ }
+ #title{
+  padding-top: 20px;
+
+ }
+ 

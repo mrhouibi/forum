@@ -1,4 +1,4 @@
-package database
+package backend
 
 import (
 	"database/sql"
@@ -10,15 +10,14 @@ import (
 
 var DB *sql.DB
 
-func InitDB(filepath string) {
+func init() {
 	var err error
-	DB, err = sql.Open("sqlite3", filepath)
+	DB, err = sql.Open("sqlite3", "forum.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	
-	DB.SetMaxOpenConns(1) 
+	DB.SetMaxOpenConns(1)
 	DB.SetConnMaxLifetime(time.Minute * 10)
 
 	// PRAGMA settings: foreign keys must be enabled per-connection; easiest: exec now (works for the connection used)
@@ -50,7 +49,8 @@ func InitDB(filepath string) {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
 		title TEXT NOT NULL,
-		body TEXT NOT NULL,
+		content TEXT NOT NULL,
+		category_id INTEGER NOT NULL,
 		created_at DATETIME DEFAULT (datetime('now')),
 		updated_at DATETIME DEFAULT (datetime('now')),
 		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -79,6 +79,13 @@ func InitDB(filepath string) {
 		FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE,
 		FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE
 	);
+	CREATE TABLE IF NOT EXISTS post_categories (
+    post_id INTEGER,
+    category_id INTEGER,
+    FOREIGN KEY(post_id) REFERENCES posts(id),
+    FOREIGN KEY(category_id) REFERENCES categories(id),
+    PRIMARY KEY(post_id, category_id)  -- ensures no duplicate post-category combinations
+);
 
 	-- Indices for performance
 	CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id);
@@ -95,5 +102,16 @@ func InitDB(filepath string) {
 	_, err = DB.Exec(schema)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if !tableExists(DB, "categories") {
+		CreateCategoriestable := `CREATE TABLE IF NOT EXISTS categories(
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		categorie TEXT NOT NULL
+	);`
+		_, err = DB.Exec(CreateCategoriestable)
+		if err != nil {
+			log.Fatalf("Failed to create table: %v", err)
+		}
+		WriteCategories()
 	}
 }

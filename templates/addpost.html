@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+
+<head>
+
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+
+
+<body>
+    <h1>WELCOME TO OUR FORUM</h1>
+    <div>
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+    </div>
+    <form method="post"  action="/addpost">
+        <textarea name="title">add title</textarea>
+        <textarea name="content">type a text</textarea>
+        <fieldset>
+    <legend>Choose categories:</legend>
+
+    <label>
+      <input type="checkbox" name="category_ids" value="Technology"> Technology
+    </label><br>
+    <label>
+      <input type="checkbox" name="category_ids" value="Science"> Science
+    </label><br>
+
+    <label>
+      <input type="checkbox" name="category_ids" value="Engineering"> Engineering
+    </label><br>
+<label>
+      <input type="checkbox" name="category_ids" value="Entertainment"> Entertainment
+    </label><br>
+    <label>
+      <input type="checkbox" name="category_ids" value="Education"> Education
+    </label><br>
+  </fieldset>
+        <button type="submit">Create Post</button>
+    </form>
+</body>

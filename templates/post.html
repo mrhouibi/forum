@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<head>
+<link rel="stylesheet" href="/static/style.css"/>
+</head>
+
+
+<body>
+
+     <div class="bar">
+       {{if .Username}}
+       <a href="/logout" class="bar-link" >logout</a>
+       <p>WELCOME {{.Username}}</p>
+       {{else}}
+        <a href="/login" class="bar-link" >Login</a>
+        <a href="/register" class="bar-link" >Register</a>
+        {{end}}
+    </div>
+    <br>
+
+    <a href="/addpost" >
+         <button class="Create" >CREATE YOUR POST</button>
+       </a>
+    <div class ="container">
+    <div class="filter">
+      <h2>Filter</h2>
+    </div>
+    <div class ="allpost">
+       {{range .Posts}}
+       <div class="post">
+        <h1 id="title">{{.Title}}</h1>
+         <pre>{{.Content}}</pre>
+       </div>
+       <div>
+       </div>
+       {{else}}
+          <h2>No posts found.</h2>
+          </div>
+       {{end}}
+    
+
+    </div>
+
+
+</body>
