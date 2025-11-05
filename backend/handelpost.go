@@ -76,17 +76,15 @@ func HandleAddPost(w http.ResponseWriter, r *http.Request) {
 
 		title := r.FormValue("title")
 		content := r.FormValue("content")
-		category := r.FormValue("category_ids")
-		// var category []string
-		// category = append(category, r.FormValue("category_ids"))
-		// fmt.Println(category)
-		id := 0
-		err := DB.QueryRow(`SELECT id FROM categories WHERE categorie=?`, category).Scan(&id)
-		if err != nil {
-			fmt.Println(err)
-			return
+		// category := r.FormValue("category_ids")
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
 		}
-		insrtpost := `INSERT INTO posts (title,content,category_id,user_id) VALUES (?, ?,?,?)`
+		// var category []string
+		category := r.Form["category_ids"]
+		fmt.Println(category)
+
+		insrtpost := `INSERT INTO posts (title,content,user_id) VALUES (?,?,?)`
 		stmt, err := DB.Prepare(insrtpost)
 		if err != nil {
 			fmt.Println(err)
@@ -94,11 +92,17 @@ func HandleAddPost(w http.ResponseWriter, r *http.Request) {
 		}
 
 		defer stmt.Close()
-		_, err = stmt.Exec(title, content, id, userId)
+		res, err := stmt.Exec(title, content, userId)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+		IdPost, err := res.LastInsertId()
+		if err != nil {
+			fmt.Println("Error getting last insert ID:", err)
+			return
+		}
+		InsertCategoriId(IdPost, category)
 
 		http.Redirect(w, r, "/post", http.StatusSeeOther)
 	} else {

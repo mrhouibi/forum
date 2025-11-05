@@ -76,7 +76,7 @@ func checkuser(userid int64) bool {
 	return false
 }
 
-func InsertCategoriId(post_id int, categories []string) {
+func InsertCategoriId(post_id int64, categories []string) {
 	var categorie_id int
 	for _, categorie := range categories {
 		err := DB.QueryRow(`SELECT id FROM categories WHERE categorie = ?`, categorie).Scan(&categorie_id)

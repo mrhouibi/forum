@@ -50,7 +50,7 @@ func init() {
 		user_id INTEGER NOT NULL,
 		title TEXT NOT NULL,
 		content TEXT NOT NULL,
-		category_id INTEGER NOT NULL,
+		
 		created_at DATETIME DEFAULT (datetime('now')),
 		updated_at DATETIME DEFAULT (datetime('now')),
 		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
