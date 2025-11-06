@@ -1,48 +1,90 @@
 <!DOCTYPE html>
 
 <head>
-<link rel="stylesheet" href="/static/style.css"/>
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 
 
 <body>
 
-     <div class="bar">
-       {{if .Username}}
-       <a href="/logout" class="bar-link" >logout</a>
-       <p>WELCOME {{.Username}}</p>
-       {{else}}
-        <a href="/login" class="bar-link" >Login</a>
-        <a href="/register" class="bar-link" >Register</a>
-        {{end}}
-    </div>
-    <br>
+  <div class="bar">
+    {{if .Username}}
+    <a href="/logout" class="bar-link">logout</a>
+    <p>WELCOME {{.Username}}</p>
+    {{else}}
+    <a href="/login" class="bar-link">Login</a>
+    <a href="/register" class="bar-link">Register</a>
+    {{end}}
+  </div>
+  <br>
+  <a class="Create" href="#show">
+    <button>CREATE YOUR POST</button>
+  </a>
+  <div id="show" class="modal">
+    <div class="addpost">
 
-    <a class="Create" href="/addpost" >
-         <button  >CREATE YOUR POST</button>
-       </a>
-    <div class ="container">
+      <a href="#" class="close">&times;</a>
+      <form method="post" action="/addpost">
+        <label>Add title</label>
+        <input class="title" name="title" placeholder="Enter your post title"> 
+        <br>
+        <label>Content</label>
+        <textarea class="content" name="content" placeholder="Write something..."></textarea>
+        <fieldset>
+          <legend>Choose categories:</legend>
+          <label>
+            <input type="checkbox" name="category_ids" value="Technology"> Technology
+          </label><br>
+          <label>
+            <input type="checkbox" name="category_ids" value="Science"> Science
+          </label><br>
+
+          <label>
+            <input type="checkbox" name="category_ids" value="Engineering"> Engineering
+          </label><br>
+          <label>
+            <input type="checkbox" name="category_ids" value="Entertainment"> Entertainment
+          </label><br>
+          <label>
+            <input type="checkbox" name="category_ids" value="Education"> Education
+          </label><br>
+        </fieldset>
+        
+        <button type="submit">Create Post</button>
+      </form>
+
+
+    </div>
+  </div>
+  <div class="container">
     <div class="filter">
       <h2>Filter</h2>
     </div>
-    <div class ="allpost">
-       {{range .Posts}}
-       <div class="post">
+    <div class="allpost">
+      {{range .Posts}}
+      <div class="post">
         <h1 id="title">{{.Title}}</h1>
-         <pre>{{.Content}}</pre>
-       </div>
-       <div>
-       </div>
-       {{else}}
-       <div id="nopost" class="post">
-        <h1 >No posts found.</h1>
-       </div>
-          
-          </div>
-       {{end}}
-    
+        <pre>{{.Content}}</pre>
+      </div>
+
+      {{else}}
+      <div id="nopost" class="post">
+        <h1>No posts found.</h1>
+      </div>
 
     </div>
+    {{end}}
+
+
+  </div>
 
 
 </body>
+
+
+<!-- {{if .Error}}
+    <div class="error">
+    <br>
+    {{.Error}}
+    {{end}}
+    </div> -->
