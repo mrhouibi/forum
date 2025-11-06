@@ -44,7 +44,7 @@ justify-content: center;
 text-align: center;
 border-radius: 2px;
 margin: auto;
-width: 30%;
+width: 22rem;
  }
 button {
  width: 100%;
@@ -100,13 +100,13 @@ text-decoration: none;
   display: flex;
   margin: 35px;
   gap: 20px;
-  width: 100%;
+  width: 150%;
   height: auto;
  }
  .allpost{
   display: inline;
   justify-content: center;
-  width: auto;
+  width: 45%;
   height: auto;
   box-sizing: border-box;
  }
@@ -116,9 +116,11 @@ text-decoration: none;
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  width: 120%;
+  width: auto;
   max-width: 125%;
-  min-height: 30%;
+  
+  min-height: 20rem;
+  max-height: auto;
   
    box-sizing: border-box;
   /* max-width: 300; */
@@ -131,10 +133,10 @@ margin: 20px 20px;
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  width: 35%;
-  max-width: 60%;
-min-height: 30%;
-height: auto;
+  width:15%;
+  max-width: 35%;
+min-height: 25%;
+height: 40rem;
   /* max-width: 300px; */
   text-align: center;
 
@@ -151,4 +153,10 @@ height: auto;
   padding-top: 20px;
 
  }
+ #nopost{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+ }
+ 
  

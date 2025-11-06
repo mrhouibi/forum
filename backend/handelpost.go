@@ -82,6 +82,10 @@ func HandleAddPost(w http.ResponseWriter, r *http.Request) {
 		}
 		// var category []string
 		category := r.Form["category_ids"]
+		if len(category) == 0 {
+			RenderTemplate(w, "addpost.html", map[string]string{"Error": "You have to choose one category or more"})
+			return
+		}
 		fmt.Println(category)
 
 		insrtpost := `INSERT INTO posts (title,content,user_id) VALUES (?,?,?)`

@@ -38,4 +38,11 @@
   </fieldset>
         <button type="submit">Create Post</button>
     </form>
+    
+    {{if .Error}}
+    <div class="error">
+    <br>
+    {{.Error}}
+    {{end}}
+    </div>
 </body>

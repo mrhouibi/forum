@@ -18,8 +18,8 @@
     </div>
     <br>
 
-    <a href="/addpost" >
-         <button class="Create" >CREATE YOUR POST</button>
+    <a class="Create" href="/addpost" >
+         <button  >CREATE YOUR POST</button>
        </a>
     <div class ="container">
     <div class="filter">
@@ -34,7 +34,10 @@
        <div>
        </div>
        {{else}}
-          <h2>No posts found.</h2>
+       <div id="nopost" class="post">
+        <h1 >No posts found.</h1>
+       </div>
+          
           </div>
        {{end}}
     
