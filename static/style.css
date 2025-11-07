@@ -118,20 +118,22 @@ a {
 }
 
 .container {
-
+ 
+  
   display: flex;
+ 
   /* margin: 35px; */
   gap: 20px;
   width: 100%;
   height: auto;
-  justify-content: center;
-    align-items: center;
+  
+    
 }
 
 .allpost {
   display: inline;
-  justify-content: center;
-  width: 45%;
+  
+  width: 78%;
   height: auto;
   box-sizing: border-box;
 }
@@ -160,7 +162,7 @@ a {
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  width: 15%;
+  width: 19%;
   max-width: 35%;
   min-height: 25%;
   height: 40rem;
