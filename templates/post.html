@@ -17,45 +17,56 @@
     {{end}}
   </div>
   <br>
-  <a class="Create" href="#show">
+  
+  <a class="Create" href="{{if .Username}}#show{{else}}/login{{end}}" >
     <button>CREATE YOUR POST</button>
   </a>
-  <div id="show" class="modal">
+  
+  <div id="show" class="modal {{if .Popup}}showit{{end}}">
     <div class="addpost">
 
-      <a href="#" class="close">&times;</a>
-      <form method="post" action="/addpost">
+      <a href="/post" class="close">&times;</a>
+      <form method="post" action="/post" class="table-post">
+        
         <label>Add title</label>
-        <input class="title" name="title" placeholder="Enter your post title"> 
+        <input class="title" type="text" name="title" placeholder="Enter your post title" value="{{.Cachetitle}}"> 
+         
         <br>
         <label>Content</label>
-        <textarea class="content" name="content" placeholder="Write something..."></textarea>
+        <textarea class="content" name="content" placeholder="Write something...">{{if .Cacheconetent}}{{.Cacheconetent}}{{end}}</textarea>
         <fieldset>
           <legend>Choose categories:</legend>
           <label>
             <input type="checkbox" name="category_ids" value="Technology"> Technology
           </label><br>
           <label>
-            <input type="checkbox" name="category_ids" value="Science"> Science
+            <input type="checkbox" name="category_ids" value="Science" > Science
           </label><br>
 
           <label>
-            <input type="checkbox" name="category_ids" value="Engineering"> Engineering
+            <input type="checkbox" name="category_ids" value="Engineering" > Engineering
           </label><br>
           <label>
-            <input type="checkbox" name="category_ids" value="Entertainment"> Entertainment
+            <input type="checkbox" name="category_ids" value="Entertainment" > Entertainment
           </label><br>
           <label>
-            <input type="checkbox" name="category_ids" value="Education"> Education
+            <input type="checkbox" name="category_ids" value="Education" > Education
           </label><br>
         </fieldset>
+        {{if .Error}}
+      <p class="error">{{.Error}}</p>
+    {{end}}
+         
+            
         <br>
         <button type="submit">Create Post</button>
-      </form>
+        
+        </form>
 
 
     </div>
   </div>
+  
   <div class="container">
     <div class="filter">
       <h2>Filter</h2>
@@ -82,9 +93,3 @@
 </body>
 
 
-<!-- {{if .Error}}
-    <div class="error">
-    <br>
-    {{.Error}}
-    {{end}}
-    </div> -->

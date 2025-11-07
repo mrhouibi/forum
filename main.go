@@ -13,7 +13,7 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", backend.Handler)
 	http.HandleFunc("/post", backend.HandlePost)
-	http.HandleFunc("/addpost", backend.HandleAddPost)
+	// http.HandleFunc("/addpost", backend.HandleAddPost)
 	// http.HandleFunc("/static", backend.HandlerStatic)
 	http.HandleFunc("/signup", backend.SignupHandler)
 	http.HandleFunc("/login", backend.LoginHandler)

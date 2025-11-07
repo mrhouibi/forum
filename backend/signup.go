@@ -2,7 +2,6 @@ package backend
 
 import (
 	"crypto/rand"
-	"fmt"
 	"net/http"
 	"regexp"
 	"time"
@@ -29,9 +28,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		username := r.FormValue("username")
 		email := r.FormValue("email")
 		password := r.FormValue("password")
-		fmt.Println(username)
-		fmt.Println(email)
-		fmt.Println(password)
+
 		// validations
 		if username == "" || email == "" || password == "" {
 			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "All fields are required"})
