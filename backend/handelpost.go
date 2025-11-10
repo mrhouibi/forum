@@ -6,15 +6,16 @@ import (
 	"net/http"
 	"os"
 )
-
+var lastCategories string
 type PostPageData struct {
-	Popup         bool
-	Username      string
-	Posts         []Datapost
-	Error         string
-	Cachetitle    string
-	Cacheconetent string
-	
+	Popup          bool
+	Username       string
+	Posts          []Datapost
+	Error          string
+	Cachetitle     string
+	Cacheconetent  string
+	Categories     []string
+	Curentcategory string
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +33,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 func HandlePost(w http.ResponseWriter, r *http.Request) {
 	tmp, err := template.ParseFiles("templates/post.html")
+	Categories := r.URL.Query().Get("Categories")
+	
 	if r.URL.Path != "/post" {
 		return
 	}
@@ -40,17 +43,20 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		userid := GetUserIDFromRequest(r)
 		username := ""
 		if userid != 0 {
-
 			err := DB.QueryRow("SELECT username FROM users WHERE id = ?", userid).Scan(&username)
 			if err != nil {
 				fmt.Print(err)
 				return
 			}
-
 		}
-		post := GetPost()
 
-		PostPageData := &PostPageData{Username: username, Posts: post}
+		post := GetPost(Categories, username, userid)
+		lastCategories=Categories
+		PostPageData := &PostPageData{
+			Username:   username,
+			Posts:      post,
+			Categories: []string{"Technology", "Science", "Education", "Engineering", "Entertainment"},
+		}
 
 		if err != nil {
 			return
@@ -88,14 +94,18 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 					}
 
 				}
-				post := GetPost()
+
+				post := GetPost(lastCategories, username, userid)
+				
 				PageData := &PostPageData{
-					Error:         "⚠️ You must choose one category or more",
-					Popup:         true,
-					Posts:         post,
-					Username:      username,
-					Cachetitle:    title,
-					Cacheconetent: content,
+					Error:          "⚠️ You must choose one category or more",
+					Popup:          true,
+					Posts:          post,
+					Username:       username,
+					Cachetitle:     title,
+					Cacheconetent:  content,
+					Categories:     []string{"Technology", "Science", "Education", "Engineering", "Entertainment"},
+					Curentcategory: lastCategories,
 				}
 				RenderTemplate(w, "post.html", PageData)
 				return
@@ -124,7 +134,6 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-
 
 func HandlerStatic(w http.ResponseWriter, r *http.Request) {
 	// Only allow GET requests

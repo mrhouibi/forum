@@ -114,4 +114,5 @@ func init() {
 		}
 		WriteCategories()
 	}
+	InsertCategorie()
 }

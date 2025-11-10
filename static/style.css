@@ -59,8 +59,8 @@ form {
 }
 
 button {
-  width: 100%;
-  padding: 10px;
+  width: auto;
+  padding: 12px 26%;
   background-color: #007BFF;
   color: white;
   border: none;
@@ -259,3 +259,16 @@ display: block;
 .modal.showit {
   display: block;
 }
+fieldset{
+      margin-right:-16px;
+    margin-left: 1px;
+}
+.sub_post{
+  margin: 4% 0% 0% 17% ;
+
+}
+
+.category-list { list-style: none; padding: 0; margin: 0; text-align: left; }
+.category-list li { margin: 8px 0; }
+.category-list a { display: block; padding: 8px 12px; color: #333; border-radius: 6px; }
+.category-list a:hover { background: #f0f6ff; color: #0056b3; }

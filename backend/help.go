@@ -11,6 +11,8 @@ type Datapost struct {
 	Content string
 }
 
+var CategoriesId  =make(map[string]int)
+
 func tableExists(db *sql.DB, tableName string) bool {
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name=?;`
 	row := db.QueryRow(query, tableName)
@@ -18,7 +20,16 @@ func tableExists(db *sql.DB, tableName string) bool {
 	err := row.Scan(&name)
 	return err == nil
 }
-
+func InsertCategorie(){
+	
+	categories := []string{"Technology", "Science", "Education", "Engineering", "Entertainment"}
+	i := 1
+	for _, categorie := range categories {
+		CategoriesId[categorie] = i
+		i++
+	}
+	 
+}
 func WriteCategories() {
 	categories := []string{"Technology", "Science", "Education", "Engineering", "Entertainment"}
 	insertcategorie := `INSERT INTO categories(categorie) VALUES (?)`
@@ -38,30 +49,30 @@ func WriteCategories() {
 	}
 }
 
-func GetPost() []Datapost {
-	posts := []Datapost{}
-	row, err := DB.Query(`SELECT title,content FROM posts`)
-	if err != nil {
+// func GetPost() []Datapost {
+// 	posts := []Datapost{}
+// 	row, err := DB.Query(`SELECT title,content FROM posts`)
+// 	if err != nil {
 
-		log.Fatal(err)
-		return nil
-	}
-	defer row.Close()
-	for row.Next() {
-		var post Datapost
-		if err := row.Scan(&post.Title, &post.Content); err != nil {
-			log.Fatal(err)
-			return nil
-		}
-		posts = append(posts, post)
+// 		log.Fatal(err)
+// 		return nil
+// 	}
+// 	defer row.Close()
+// 	for row.Next() {
+// 		var post Datapost
+// 		if err := row.Scan(&post.Title, &post.Content); err != nil {
+// 			log.Fatal(err)
+// 			return nil
+// 		}
+// 		posts = append(posts, post)
 
-	}
-	if err = row.Err(); err != nil {
-		log.Fatal(err)
-		return nil
-	}
-	return posts
-}
+// 	}
+// 	if err = row.Err(); err != nil {
+// 		log.Fatal(err)
+// 		return nil
+// 	}
+// 	return posts
+// }
 
 func checkuser(userid int64) bool {
 	var token string
@@ -88,4 +99,46 @@ func InsertCategoriId(post_id int64, categories []string) {
 			return
 		}
 	}
+}
+
+func GetPost(category,username string,UserId int64) []Datapost {
+	posts := []Datapost{}
+	Categorie_Id := CategoriesId[category]
+	
+	var row *sql.Rows
+	var err error
+	if category == "" {
+		row, err = DB.Query(`SELECT title,content FROM posts`)
+	}else if category==username{
+		row,err=DB.Query(`SELECT title,content FROM posts WHERE user_id=?`,UserId)
+		
+	}else {
+		row, err = DB.Query(`SELECT posts.title,posts.content 
+	FROM posts
+	JOIN post_categories ON post_categories.post_id=posts.id
+	WHERE post_categories.category_id=?
+	`, Categorie_Id)
+		
+	}
+
+	if err != nil {
+
+		log.Fatal(err)
+		return nil
+	}
+	defer row.Close()
+	for row.Next() {
+		var post Datapost
+		if err := row.Scan(&post.Title, &post.Content); err != nil {
+			log.Fatal(err)
+			return nil
+		}
+		posts = append(posts, post)
+
+	}
+	if err = row.Err(); err != nil {
+		log.Fatal(err)
+		return nil
+	}
+	return posts
 }

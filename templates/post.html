@@ -2,6 +2,7 @@
 
 <head>
   <link rel="stylesheet" href="/static/style.css" />
+      
 </head>
 
 
@@ -25,33 +26,22 @@
   <div id="show" class="modal {{if .Popup}}showit{{end}}">
     <div class="addpost">
 
-      <a href="/post" class="close">&times;</a>
+      <a href="/post{{if .Curentcategory}}?Categories={{.Curentcategory}}
+      {{end}}" class="close">&times;</a>
       <form method="post" action="/post" class="table-post">
         
         <label>Add title</label>
         <input class="title" type="text" name="title" placeholder="Enter your post title" value="{{.Cachetitle}}"> 
-         
         <br>
         <label>Content</label>
         <textarea class="content" name="content" placeholder="Write something...">{{if .Cacheconetent}}{{.Cacheconetent}}{{end}}</textarea>
         <fieldset>
           <legend>Choose categories:</legend>
+          {{range .Categories}}
           <label>
-            <input type="checkbox" name="category_ids" value="Technology"> Technology
+            <input type="checkbox" name="category_ids" value="{{.}}"> {{.}}
           </label><br>
-          <label>
-            <input type="checkbox" name="category_ids" value="Science" > Science
-          </label><br>
-
-          <label>
-            <input type="checkbox" name="category_ids" value="Engineering" > Engineering
-          </label><br>
-          <label>
-            <input type="checkbox" name="category_ids" value="Entertainment" > Entertainment
-          </label><br>
-          <label>
-            <input type="checkbox" name="category_ids" value="Education" > Education
-          </label><br>
+          {{end}}
         </fieldset>
         {{if .Error}}
       <p class="error">{{.Error}}</p>
@@ -59,7 +49,7 @@
          
             
         <br>
-        <button type="submit">Create Post</button>
+        <button class="sub_post" type="submit">Create Post</button>
         
         </form>
 
@@ -70,6 +60,16 @@
   <div class="container">
     <div class="filter">
       <h2>Filter</h2>
+      
+       <ul class="category-list">
+        <li><a href="/post" >AllPost</a></li>
+         {{if .Username}}
+         <li><a href="/post?Categories={{.Username}}">MyPost</a></li>  <!--?Categories=__my-->
+        {{end}}
+        {{range .Categories}}
+          <li><a href="/post?Categories={{.}}">{{.}}</a></li>  
+        {{end}}
+    </ul>
     </div>
     <div class="allpost">
       {{range .Posts}}

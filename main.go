@@ -9,7 +9,6 @@ import (
 
 func main() {
 	backend.LoadTemplates("templates/*.html")
-
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", backend.Handler)
 	http.HandleFunc("/post", backend.HandlePost)
