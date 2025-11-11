@@ -5,8 +5,11 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"strconv"
 )
+
 var lastCategories string
+
 type PostPageData struct {
 	Popup          bool
 	Username       string
@@ -34,38 +37,53 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 func HandlePost(w http.ResponseWriter, r *http.Request) {
 	tmp, err := template.ParseFiles("templates/post.html")
 	Categories := r.URL.Query().Get("Categories")
-	
+
+	IdPst, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		fmt.Print(err)
+		IdPst=0
+	}
 	if r.URL.Path != "/post" {
 		return
 	}
 	if r.Method == http.MethodGet {
-
+		Data := &PostPageData{}
 		userid := GetUserIDFromRequest(r)
 		username := ""
 		if userid != 0 {
 			err := DB.QueryRow("SELECT username FROM users WHERE id = ?", userid).Scan(&username)
 			if err != nil {
+				
 				fmt.Print(err)
 				return
 			}
 		}
+		if IdPst != 0 {
+			// fmt.Println("ok")
+			post := GetPostById(IdPst)
+			Data = &PostPageData{
+				Username:   username,
+				Posts:      post,
+				Categories: []string{"Technology", "Science", "Education", "Engineering", "Entertainment"},
+			}
 
-		post := GetPost(Categories, username, userid)
-		lastCategories=Categories
-		PostPageData := &PostPageData{
-			Username:   username,
-			Posts:      post,
-			Categories: []string{"Technology", "Science", "Education", "Engineering", "Entertainment"},
+		} else {
+			
+			post := GetPost(Categories, username, userid)
+			lastCategories = Categories
+			Data = &PostPageData{
+				Username:   username,
+				Posts:      post,
+				Categories: []string{"Technology", "Science", "Education", "Engineering", "Entertainment"},
+			}
 		}
-
-		if err != nil {
-			return
-		}
-		if err = tmp.Execute(w, PostPageData); err != nil {
+		
+		if err = tmp.Execute(w, Data); err != nil {
 			fmt.Println(err)
 			return
 		}
 		return
+
 	}
 	if r.Method == http.MethodPost {
 		userId := GetUserIDFromRequest(r)
@@ -96,7 +114,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 				}
 
 				post := GetPost(lastCategories, username, userid)
-				
+
 				PageData := &PostPageData{
 					Error:          "⚠️ You must choose one category or more",
 					Popup:          true,

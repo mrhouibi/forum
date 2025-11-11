@@ -73,7 +73,7 @@
     </div>
     <div class="allpost">
       {{range .Posts}}
-      <div class="post">
+      <div class="post" value="{{.IdPost}}" onclick="window.location.href='/post?id={{.IdPost}}'">
         <h1 id="title">{{.Title}}</h1>
         <pre>{{.Content}}</pre>
       </div>

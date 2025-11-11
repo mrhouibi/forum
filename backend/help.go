@@ -9,6 +9,7 @@ import (
 type Datapost struct {
 	Title   string
 	Content string
+	IdPost int
 }
 
 var CategoriesId  =make(map[string]int)
@@ -108,12 +109,12 @@ func GetPost(category,username string,UserId int64) []Datapost {
 	var row *sql.Rows
 	var err error
 	if category == "" {
-		row, err = DB.Query(`SELECT title,content FROM posts`)
+		row, err = DB.Query(`SELECT title,content,id FROM posts`)
 	}else if category==username{
-		row,err=DB.Query(`SELECT title,content FROM posts WHERE user_id=?`,UserId)
+		row,err=DB.Query(`SELECT title,content,id FROM posts WHERE user_id=?`,UserId)
 		
 	}else {
-		row, err = DB.Query(`SELECT posts.title,posts.content 
+		row, err = DB.Query(`SELECT posts.title,posts.content,posts.id 
 	FROM posts
 	JOIN post_categories ON post_categories.post_id=posts.id
 	WHERE post_categories.category_id=?
@@ -129,7 +130,32 @@ func GetPost(category,username string,UserId int64) []Datapost {
 	defer row.Close()
 	for row.Next() {
 		var post Datapost
-		if err := row.Scan(&post.Title, &post.Content); err != nil {
+		if err := row.Scan(&post.Title, &post.Content,&post.IdPost); err != nil {
+			log.Fatal(err)
+			return nil
+		}
+		posts = append(posts, post)
+
+	}
+	if err = row.Err(); err != nil {
+		log.Fatal(err)
+		return nil
+	}
+	return posts
+}
+
+
+func GetPostById(PostId int) []Datapost {
+	posts := []Datapost{}
+	row, err := DB.Query(`SELECT title,content,id FROM posts WHERE id =?`,PostId)
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+	defer row.Close()
+	for row.Next() {
+		var post Datapost
+		if err := row.Scan(&post.Title, &post.Content,&post.IdPost); err != nil {
 			log.Fatal(err)
 			return nil
 		}
