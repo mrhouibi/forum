@@ -8,11 +8,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var DB *sql.DB
+
 
 func init() {
 	var err error
-	DB, err = sql.Open("sqlite3", "forum.db")
+	DB, err := sql.Open("sqlite3", "forum.db")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,12 +60,10 @@ func init() {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		post_id INTEGER NOT NULL,
 		user_id INTEGER NOT NULL,
-		parent_comment_id INTEGER,
-		body TEXT NOT NULL,
+		comment TEXT NOT NULL,
 		created_at DATETIME DEFAULT (datetime('now')),
 		FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE,
-		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
-		FOREIGN KEY(parent_comment_id) REFERENCES comments(id) ON DELETE CASCADE
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 	);
 
 	CREATE TABLE IF NOT EXISTS likes (
@@ -112,7 +110,7 @@ func init() {
 		if err != nil {
 			log.Fatalf("Failed to create table: %v", err)
 		}
-		WriteCategories()
+		WriteCategories(DB)
 	}
 	InsertCategorie()
 }

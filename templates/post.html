@@ -1,81 +1,102 @@
 <!DOCTYPE html>
-
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <title>Posts</title>
   <link rel="stylesheet" href="/static/style.css" />
-      
 </head>
 
-
 <body>
-
+  <!-- Top bar -->
   <div class="bar">
     {{if .Username}}
-    <a href="/logout" class="bar-link">logout</a>
-    <p>WELCOME {{.Username}}</p>
+      <a href="/logout" class="bar-link">Logout</a>
+      <p>WELCOME {{.Username}}</p>
     {{else}}
-    <a href="/login" class="bar-link">Login</a>
-    <a href="/register" class="bar-link">Register</a>
+      <a href="/login" class="bar-link">Login</a>
+      <a href="/register" class="bar-link">Register</a>
     {{end}}
   </div>
+
   <br>
-  
-  <a class="Create" href="{{if .Username}}#show{{else}}/login{{end}}" >
+
+  <!-- Create Post Button -->
+  <a class="Create" href="{{if .Username}}#show{{else}}/login{{end}}">
     <button>CREATE YOUR POST</button>
   </a>
-  
-  <div id="show" class="modal {{if .Popup}}showit{{end}}">
-    <div class="addpost">
 
-      <a href="/post{{if .Curentcategory}}?Categories={{.Curentcategory}}
-      {{end}}" class="close">&times;</a>
-      <form method="post" action="/post" class="table-post">
-        
+  <!-- Modal Create Post -->
+  <div id="show" class="modal {{if .Popup}}showit{{end}}">
+    <a href="/post{{if .Curentcategory}}?Categories={{.Curentcategory}}{{end}}">
+      <button class="back"></button>
+    </a>
+
+    <div class="addpost">
+      <a href="/post{{if .Curentcategory}}?Categories={{.Curentcategory}}{{end}}" class="close">&times;</a>
+
+      <form method="POST" action="/post" class="table-post">
         <label>Add title</label>
         <input class="title" type="text" name="title" placeholder="Enter your post title" value="{{.Cachetitle}}"> 
         <br>
+
         <label>Content</label>
         <textarea class="content" name="content" placeholder="Write something...">{{if .Cacheconetent}}{{.Cacheconetent}}{{end}}</textarea>
+
         <fieldset>
           <legend>Choose categories:</legend>
           {{range .Categories}}
-          <label>
-            <input type="checkbox" name="category_ids" value="{{.}}"> {{.}}
-          </label><br>
+            <label>
+              <input type="checkbox" name="category_ids" value="{{.}}"> {{.}}
+            </label><br>
           {{end}}
         </fieldset>
+
         {{if .Error}}
-      <p class="error">{{.Error}}</p>
-    {{end}}
-         
-            
+          <p class="error">{{.Error}}</p>
+        {{end}}
+
         <br>
         <button class="sub_post" type="submit">Create Post</button>
-        
-        </form>
-
-
+      </form>
     </div>
   </div>
-  
+
+ 
   <div class="container">
     <div class="filter">
       <h2>Filter</h2>
-      
-       <ul class="category-list">
-        <li><a href="/post" >AllPost</a></li>
-         {{if .Username}}
-         <li><a href="/post?Categories={{.Username}}">MyPost</a></li>  <!--?Categories=__my-->
+      <ul class="category-list">
+        <li><a href="/post">All Posts</a></li>
+        {{if .Username}}
+          <li><a href="/post?Categories={{.Username}}">My Posts</a></li>
         {{end}}
         {{range .Categories}}
           <li><a href="/post?Categories={{.}}">{{.}}</a></li>  
         {{end}}
-    </ul>
+      </ul>
     </div>
+
     <div class="allpost">
       {{range .Posts}}
-      <div class="post" value="{{.IdPost}}" onclick="window.location.href='/post?id={{.IdPost}}'">
+      <div class="post" value="{{.IdPost}}" >   <!-- onclick="window.location.href='/post?id={{.IdPost}}' -->
         <h1 id="title">{{.Title}}</h1>
         <pre>{{.Content}}</pre>
+        <div class="comment-box">
+          <form method="POST" action="/comment#post{{.IdPost}}">
+            <input type="hidden" name="post_id" value="{{.IdPost}}">
+            <input type="text" name="comment" placeholder="Write a comment..." required>
+            <button type="submit">Submit Comment</button>
+          </form>
+          <div class="comments-list">
+      {{range .Comments}}
+        <div>{{.}}
+          <h1 >{{.Username}}</h1>
+        <pre>{{.Content}}</pre>
+        <pre>{{.CreatedAt}}</pre>
+        </div>
+      {{end}}
+    </div>
+        </div>
       </div>
 
       {{else}}
@@ -88,8 +109,5 @@
 
 
   </div>
-
-
 </body>
-
-
+</html>

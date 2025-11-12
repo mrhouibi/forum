@@ -224,8 +224,18 @@ display: inline;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+  
 }
+.back{
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
 
+}
+.back:hover {
+  background-color: rgba(0, 0, 0, 0.5);;
+}
 .close {
   position: absolute;
   top: 10px;
@@ -298,7 +308,40 @@ fieldset{
 .rtnhome{
   color: white;
 }
+.comment-box {
+      margin-top: 90px;
+    }
 
+    .comment-box input[type="text"] {
+      width: 84%;
+      min-height: 2.5rem;
+      max-height: auto;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+    }
+
+    .comment-box button {
+      padding: 12px 17px;
+      border-radius: 6px;
+      border: none;
+      background-color: #008CBA;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .comments-list {
+      margin-top: 15px;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+    }
+
+    .comments-list div {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #333;
+    }
 .category-list { list-style: none; padding: 0; margin: 0; text-align: left; }
 .category-list li { margin: 8px 0; }
 .category-list a { display: block; padding: 8px 12px; color: #333; border-radius: 6px; }

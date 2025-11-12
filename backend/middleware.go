@@ -1,12 +1,13 @@
 package backend
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"time"
 )
 
-func GetUserIDFromRequest(r *http.Request) int64 {
+func GetUserIDFromRequest(DB *sql.DB,r *http.Request) int64 {
 	c, err := r.Cookie("session_token")
 	if err != nil {
 		return 0
@@ -33,9 +34,9 @@ func GetUserIDFromRequest(r *http.Request) int64 {
 	return userID
 }
 
-func AuthRequired(next http.HandlerFunc) http.HandlerFunc {
+func AuthRequired(DB *sql.DB,next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if GetUserIDFromRequest(r) == 0 {
+		if GetUserIDFromRequest(DB,r) == 0 {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}

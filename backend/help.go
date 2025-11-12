@@ -8,6 +8,11 @@ import (
 	"net/http"
 )
 
+type DataComment struct {
+	Username  string
+	Content   string
+	CreatedAt string
+}
 type Datapost struct {
 	Title   string
 	Content string
@@ -20,9 +25,9 @@ type Message_Error struct {
 
 var CategoriesId = make(map[string]int)
 
-func tableExists(db *sql.DB, tableName string) bool {
+func tableExists(DB *sql.DB, tableName string) bool {
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name=?;`
-	row := db.QueryRow(query, tableName)
+	row := DB.QueryRow(query, tableName)
 	var name string
 	err := row.Scan(&name)
 	return err == nil
@@ -37,7 +42,7 @@ func InsertCategorie() {
 	}
 }
 
-func WriteCategories() {
+func WriteCategories(DB *sql.DB) {
 	categories := []string{"Technology", "Science", "Education", "Engineering", "Entertainment"}
 	insertcategorie := `INSERT INTO categories(categorie) VALUES (?)`
 
@@ -56,7 +61,7 @@ func WriteCategories() {
 	}
 }
 
-func checkuser(userid int64) bool {
+func checkuser(DB *sql.DB, userid int64) bool {
 	var token string
 	err := DB.QueryRow(`SELECT token FROM sessions WHERE user_id = ? `, userid).Scan(&token)
 	if err == sql.ErrNoRows {
@@ -69,7 +74,7 @@ func checkuser(userid int64) bool {
 	return false
 }
 
-func InsertCategoriId(post_id int64, categories []string) {
+func InsertCategoriId(DB *sql.DB, post_id int64, categories []string) {
 	var categorie_id int
 	for _, categorie := range categories {
 		err := DB.QueryRow(`SELECT id FROM categories WHERE categorie = ?`, categorie).Scan(&categorie_id)
@@ -83,7 +88,7 @@ func InsertCategoriId(post_id int64, categories []string) {
 	}
 }
 
-func GetPost(category, username string, UserId int64) []Datapost {
+func GetPost(DB *sql.DB, category, username string, UserId int64) []Datapost {
 	posts := []Datapost{}
 	Categorie_Id := CategoriesId[category]
 
@@ -123,7 +128,7 @@ func GetPost(category, username string, UserId int64) []Datapost {
 	return posts
 }
 
-func GetPostById(PostId int) []Datapost {
+func GetPostById(DB *sql.DB, PostId int) []Datapost {
 	posts := []Datapost{}
 	row, err := DB.Query(`SELECT title,content,id FROM posts WHERE id =?`, PostId)
 	if err != nil {
@@ -147,6 +152,31 @@ func GetPostById(PostId int) []Datapost {
 	return posts
 }
 
+func GetComment(DB *sql.DB, PostId int) []DataComment {
+	Comments := []DataComment{}
+	rows, err := DB.Query(`
+			SELECT u.username, c.comment, c.created_at
+			FROM comments c
+			JOIN users u ON u.id = c.user_id
+			WHERE c.post_id = ?
+			ORDER BY c.created_at DESC`, PostId)
+	if err != nil {
+		fmt.Println(err)
+		// http.Error(w, "Erreur base de données", http.StatusInternalServerError)
+		return nil
+	}
+	defer rows.Close()
+
+	// On renvoie du HTML directement pour mettre à jour dynamiquement
+	
+	for rows.Next() {
+		var DataComments DataComment
+		rows.Scan(&DataComments.Username, &DataComments.Content, &DataComments.CreatedAt)
+	}
+	fmt.Println(Comments)
+	return Comments
+}
+
 func Render(w http.ResponseWriter, status int) {
 	// Parse the error template file
 	tmp, err := template.ParseFiles("templates/errorpage.html")
@@ -167,7 +197,7 @@ func Render(w http.ResponseWriter, status int) {
 	case 405:
 		message = "Status Method Not Allowed."
 	case 403:
-		message="Access denied: you don’t have permission to view this resource."
+		message = "Access denied: you don’t have permission to view this resource."
 	default:
 		message = "Status Internal Server Error"
 	}

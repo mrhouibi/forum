@@ -1,6 +1,9 @@
 package backend
 
-import "log"
+import (
+	"database/sql"
+	"log"
+)
 
 type Category struct {
 	ID       int
@@ -9,7 +12,7 @@ type Category struct {
 }
 
 // GetCategories returns all categories from the DB ordered by name.
-func GetCategories() []Category {
+func GetCategories(DB *sql.DB) []Category {
 	cats := []Category{}
 	rows, err := DB.Query(`SELECT id, categorie FROM categories ORDER BY categorie`)
 	if err != nil {
