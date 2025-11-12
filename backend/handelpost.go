@@ -27,11 +27,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method != http.MethodGet {
 		return
 	}
-	tmpl, err := template.ParseFiles("templates/index.html")
-	if err != nil {
-		return
-	}
-	tmpl.Execute(w, nil)
+	http.Redirect(w, r, "/post", http.StatusSeeOther)
 }
 
 func HandlePost(w http.ResponseWriter, r *http.Request) {
@@ -40,8 +36,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 
 	IdPst, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
-		fmt.Print(err)
-		IdPst=0
+		IdPst = 0
 	}
 	if r.URL.Path != "/post" {
 		return
@@ -53,7 +48,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		if userid != 0 {
 			err := DB.QueryRow("SELECT username FROM users WHERE id = ?", userid).Scan(&username)
 			if err != nil {
-				
+
 				fmt.Print(err)
 				return
 			}
@@ -61,6 +56,10 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		if IdPst != 0 {
 			// fmt.Println("ok")
 			post := GetPostById(IdPst)
+			if len(post) == 0 {
+				Render(w, 404)
+				return
+			}
 			Data = &PostPageData{
 				Username:   username,
 				Posts:      post,
@@ -68,7 +67,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 			}
 
 		} else {
-			
+
 			post := GetPost(Categories, username, userid)
 			lastCategories = Categories
 			Data = &PostPageData{
@@ -77,7 +76,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 				Categories: []string{"Technology", "Science", "Education", "Engineering", "Entertainment"},
 			}
 		}
-		
+
 		if err = tmp.Execute(w, Data); err != nil {
 			fmt.Println(err)
 			return
@@ -156,6 +155,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 func HandlerStatic(w http.ResponseWriter, r *http.Request) {
 	// Only allow GET requests
 	if r.Method != http.MethodGet {
+		Render(w,405)
 		return
 	} else {
 		// Check if the requested file exists and is not a directory
@@ -164,6 +164,7 @@ func HandlerStatic(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		} else if info.IsDir() {
+			Render(w,403)
 			return
 		} else {
 			// Serve the static file
