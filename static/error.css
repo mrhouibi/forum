@@ -1,0 +1,31 @@
+/* errorpage.css - for errorpage.html (light theme, dark buttons) */
+:root{
+  --bg: #f5f9ff;
+  --panel: #ffffff;
+  --muted: #51606a;
+  --dark-btn: #0f1724;
+  --dark-btn-2: #1f2937;
+  --danger: #c2410c;
+  --radius:14px;
+  --shadow: 0 18px 60px rgba(10,25,47,0.06);
+  --ui: "Inter", system-ui, Arial, sans-serif;
+}
+
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--ui);background:linear-gradient(180deg,#f5f9ff,#eef6fb);color:#0b1720;display:flex;align-items:center;justify-content:center;padding:36px;min-height:100vh}
+
+/* centered error card */
+.error_status{
+  max-width:760px;margin:0 auto;padding:28px;text-align:center;border-radius:16px;
+  background:var(--panel);box-shadow:var(--shadow);border:1px solid rgba(11,17,32,0.04);
+}
+.error_mark{width:120px;height:120px;object-fit:contain;margin-bottom:18px}
+.error_status h2{margin:8px 0;color:var(--danger);font-size:20px}
+.error_status p{color:var(--muted);margin:0 0 18px}
+.error_status button{
+  margin-top:14px;padding:12px 18px;border-radius:10px;border:none;
+  background:linear-gradient(180deg,var(--dark-btn),var(--dark-btn-2));color:white;font-weight:700;
+  box-shadow:0 18px 50px rgba(11,17,32,0.12);transition:transform .12s ease;
+}
+.error_status button:hover{transform:translateY(-4px)}
+.error_status .rtnhome{color:white;text-decoration:none}

@@ -24,6 +24,7 @@ func main() {
 	http.HandleFunc("/login", backend.LoginHandler(DB))
 	http.HandleFunc("/logout", backend.LogoutHandler(DB))
 	http.HandleFunc("/comment", backend.HandleAddComment(DB))
+	
 
 	log.Println("Server running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

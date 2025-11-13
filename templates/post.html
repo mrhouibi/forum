@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Posts</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/post.css" />
 </head>
 
 <body>
@@ -14,11 +14,9 @@
       <p>WELCOME {{.Username}}</p>
     {{else}}
       <a href="/login" class="bar-link">Login</a>
-      <a href="/register" class="bar-link">Register</a>
+      <a href="/signup" class="bar-link">Register</a>
     {{end}}
   </div>
-
-  <br>
 
   <!-- Create Post Button -->
   <a class="Create" href="{{if .Username}}#show{{else}}/login{{end}}">
@@ -37,7 +35,6 @@
       <form method="POST" action="/post" class="table-post">
         <label>Add title</label>
         <input class="title" type="text" name="title" placeholder="Enter your post title" value="{{.Cachetitle}}"> 
-        <br>
 
         <label>Content</label>
         <textarea class="content" name="content" placeholder="Write something...">{{if .Cacheconetent}}{{.Cacheconetent}}{{end}}</textarea>
@@ -55,14 +52,13 @@
           <p class="error">{{.Error}}</p>
         {{end}}
 
-        <br>
         <button class="sub_post" type="submit">Create Post</button>
       </form>
     </div>
   </div>
 
- 
   <div class="container">
+    <!-- Left Filter -->
     <div class="filter">
       <h2>Filter</h2>
       <ul class="category-list">
@@ -76,9 +72,10 @@
       </ul>
     </div>
 
+    <!-- Posts Column -->
     <div class="allpost">
       {{range .Posts}}
-      <div class="post" value="{{.IdPost}}" >   <!-- onclick="window.location.href='/post?id={{.IdPost}}' -->
+      <div class="post" value="{{.IdPost}}">
         <h1 id="title">{{.Title}}</h1>
         <pre>{{.Content}}</pre>
         <div class="comment-box">
@@ -87,27 +84,24 @@
             <input type="text" name="comment" placeholder="Write a comment..." required>
             <button type="submit">Submit Comment</button>
           </form>
+
           <div class="comments-list">
-      {{range .Comments}}
-        <div>{{.}}
-          <h1 >{{.Username}}</h1>
-        <pre>{{.Content}}</pre>
-        <pre>{{.CreatedAt}}</pre>
-        </div>
-      {{end}}
-    </div>
+            {{range .Comments}}
+            <div class="comment-item">
+              <h2>{{.Username}}</h2>
+              <pre>{{.Content}}</pre>
+              <pre class="created">{{.CreatedAt}}</pre>
+            </div>
+            {{end}}
+          </div>
         </div>
       </div>
-
       {{else}}
       <div id="nopost" class="post">
         <h1>No posts found.</h1>
       </div>
-
+      {{end}}
     </div>
-    {{end}}
-
-
   </div>
 </body>
 </html>

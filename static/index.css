@@ -1,0 +1,32 @@
+/* index.css - for index.html (light theme, dark buttons) */
+:root{
+  --bg: #f5f9ff;
+  --panel: #ffffff;
+  --muted: #384a57;
+  --dark-btn: #0f1724;
+  --dark-btn-2: #1f2937;
+  --radius:12px;
+  --shadow: 0 18px 60px rgba(10,25,47,0.06);
+  --ui: "Inter", system-ui, Arial, sans-serif;
+}
+
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--ui);background:linear-gradient(180deg,#f5f9ff,#eef6fb);color:#0b1720;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px}
+
+/* title */
+body > h1{
+  text-align:center;margin-top:36px;margin-bottom:12px;font-size:34px;color:#06293b;
+}
+
+/* links row */
+body > div{display:flex;gap:14px;justify-content:center;margin-top:18px}
+body > div a{
+  padding:12px 16px;border-radius:12px;background:var(--panel);border:1px solid rgba(11,17,32,0.04);
+  box-shadow:var(--shadow);color:#06293b;font-weight:600;transition:transform .12s ease,box-shadow .12s ease;
+}
+body > div a:hover{transform:translateY(-4px);box-shadow:0 28px 60px rgba(11,17,32,0.12)}
+
+/* make links visually like dark buttons when used as CTA */
+body > div a.cta{
+  background:linear-gradient(180deg,var(--dark-btn),var(--dark-btn-2));color:#fff;border:none;
+}

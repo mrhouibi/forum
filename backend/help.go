@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 )
 
@@ -57,19 +56,19 @@ func WriteCategories(DB *sql.DB) {
 			fmt.Println(err)
 			return
 		}
-
 	}
 }
 
 func checkuser(DB *sql.DB, userid int64) bool {
 	var token string
-	err := DB.QueryRow(`SELECT token FROM sessions WHERE user_id = ? `, userid).Scan(&token)
+	err := DB.QueryRow(`SELECT token FROM sessions WHERE user_id = ?`, userid).Scan(&token)
 	if err == sql.ErrNoRows {
 		return true
 	}
-	_, err = DB.Exec(`DELETE FROM sessions WHERE user_id = ? `, userid)
+	_, err = DB.Exec(`DELETE FROM sessions WHERE user_id = ?`, userid)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return false
 	}
 	return false
 }
@@ -102,28 +101,21 @@ func GetPost(DB *sql.DB, category, username string, UserId int64) []Datapost {
 		row, err = DB.Query(`SELECT posts.title,posts.content,posts.id 
 	FROM posts
 	JOIN post_categories ON post_categories.post_id=posts.id
-	WHERE post_categories.category_id=?
-	`, Categorie_Id)
+	WHERE post_categories.category_id=?`, Categorie_Id)
 	}
 
 	if err != nil {
-
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil
 	}
 	defer row.Close()
 	for row.Next() {
 		var post Datapost
 		if err := row.Scan(&post.Title, &post.Content, &post.IdPost); err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 			return nil
 		}
 		posts = append(posts, post)
-
-	}
-	if err = row.Err(); err != nil {
-		log.Fatal(err)
-		return nil
 	}
 	return posts
 }
@@ -132,22 +124,17 @@ func GetPostById(DB *sql.DB, PostId int) []Datapost {
 	posts := []Datapost{}
 	row, err := DB.Query(`SELECT title,content,id FROM posts WHERE id =?`, PostId)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil
 	}
 	defer row.Close()
 	for row.Next() {
 		var post Datapost
 		if err := row.Scan(&post.Title, &post.Content, &post.IdPost); err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 			return nil
 		}
 		posts = append(posts, post)
-
-	}
-	if err = row.Err(); err != nil {
-		log.Fatal(err)
-		return nil
 	}
 	return posts
 }
@@ -155,39 +142,32 @@ func GetPostById(DB *sql.DB, PostId int) []Datapost {
 func GetComment(DB *sql.DB, PostId int) []DataComment {
 	Comments := []DataComment{}
 	rows, err := DB.Query(`
-			SELECT u.username, c.comment, c.created_at
-			FROM comments c
-			JOIN users u ON u.id = c.user_id
-			WHERE c.post_id = ?
-			ORDER BY c.created_at DESC`, PostId)
+		SELECT u.username, c.comment, c.created_at
+		FROM comments c
+		JOIN users u ON u.id = c.user_id
+		WHERE c.post_id = ?
+		ORDER BY c.created_at DESC`, PostId)
 	if err != nil {
 		fmt.Println(err)
-		// http.Error(w, "Erreur base de données", http.StatusInternalServerError)
 		return nil
 	}
 	defer rows.Close()
 
-	// On renvoie du HTML directement pour mettre à jour dynamiquement
-	
 	for rows.Next() {
 		var DataComments DataComment
 		rows.Scan(&DataComments.Username, &DataComments.Content, &DataComments.CreatedAt)
+		Comments = append(Comments, DataComments) // <- هنا أضفت append
 	}
-	fmt.Println(Comments)
 	return Comments
 }
 
 func Render(w http.ResponseWriter, status int) {
-	// Parse the error template file
 	tmp, err := template.ParseFiles("templates/errorpage.html")
-	// Set the HTTP status code in the response
 	w.WriteHeader(status)
-	// If there is an error loading the template, show a simple error message
 	if err != nil {
 		http.Error(w, "page not found", http.StatusNotFound)
 		return
 	}
-	// Prepare the error message based on the status code
 	message := ""
 	switch status {
 	case 400:
@@ -201,11 +181,9 @@ func Render(w http.ResponseWriter, status int) {
 	default:
 		message = "Status Internal Server Error"
 	}
-	// Create a struct with status and message to pass to the template
 	mes := Message_Error{
 		Status:  status,
 		Message: message,
 	}
-	// Execute the template and display the error page
 	tmp.Execute(w, mes)
 }
