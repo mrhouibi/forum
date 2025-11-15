@@ -2,7 +2,10 @@ package backend
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
+	"path"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -10,11 +13,19 @@ import (
 
 func LoginHandler(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/login" {
-			Render(w, http.StatusNotFound)
+		// --- URL Validation ---
+
+		if len(r.URL.Path) > 2048 || strings.Contains(r.URL.Path, "\x00") || strings.Contains(r.URL.Path, "..") {
+			log.Printf("Suspicious login path: %q", r.URL.Path)
+			Render(w, http.StatusBadRequest)
+			return
+		}
+		if r.URL.Path != path.Clean(r.URL.Path) {
+			Render(w, http.StatusBadRequest)
 			return
 		}
 
+		// --- Session Check ---
 		cookie, err := r.Cookie("session_token")
 		if err == nil {
 			var userID int64
@@ -25,18 +36,24 @@ func LoginHandler(DB *sql.DB) http.HandlerFunc {
 			}
 		}
 
+		// --- Method Validation ---
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			Render(w, http.StatusMethodNotAllowed)
 			return
 		}
 
+		// --- GET Method ---
 		if r.Method == http.MethodGet {
-			RenderTemplate(w, "login.html", map[string]string{"Error": ""})
+			if err := templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": ""}); err != nil {
+				log.Printf("Template render error (GET /login): %v", err)
+				Render(w, http.StatusInternalServerError)
+			}
 			return
 		}
 
+		// --- POST Method ---
 		if err := r.ParseForm(); err != nil {
-			RenderTemplate(w, "login.html", map[string]string{"Error": "Invalid form"})
+			Render(w, http.StatusBadRequest)
 			return
 		}
 
@@ -51,11 +68,13 @@ func LoginHandler(DB *sql.DB) http.HandlerFunc {
 		var passwordHash string
 		err = DB.QueryRow("SELECT id, password_hash FROM users WHERE email = ?", email).Scan(&userID, &passwordHash)
 		if err == sql.ErrNoRows {
-			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Invalid email or password"})
+			http.Error(w, "Invalid email or password", http.StatusBadRequest)
+
 			return
 		}
 		if err != nil {
-			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Database error"})
+			log.Printf("DB error on login: %v", err)
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 		if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)); err != nil {
@@ -65,14 +84,16 @@ func LoginHandler(DB *sql.DB) http.HandlerFunc {
 
 		token := generateRandomToken()
 		if token == "" {
-			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Failed to create session"})
+			log.Printf("Token generation failed")
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 		exp := time.Now().Add(24 * time.Hour)
 
 		_, err = DB.Exec("INSERT INTO sessions(token, user_id, expires_at) VALUES (?, ?, ?)", token, userID, exp.Format("2006-01-02 15:04:05"))
 		if err != nil {
-			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Failed to create session"})
+			log.Printf("Insert session error: %v", err)
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 

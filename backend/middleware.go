@@ -13,7 +13,6 @@ func GetUserIDFromRequest(DB *sql.DB,r *http.Request) int64 {
 		return 0
 	}
 	token := c.Value
-
 	var userID int64
 	var expiresAtStr string
 	err = DB.QueryRow("SELECT user_id, expires_at FROM sessions WHERE token = ?", token).Scan(&userID, &expiresAtStr)

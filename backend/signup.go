@@ -3,32 +3,53 @@ package backend
 import (
 	"crypto/rand"
 	"database/sql"
+	"log"
 	"net/http"
+	"path"
 	"regexp"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-var (
-	usernameRe = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
-	emailRe    = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
-)
-
 func SignupHandler(DB *sql.DB) http.HandlerFunc {
+	usernameRe := regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+
+	emailRe := regexp.MustCompile(
+		`^[A-Za-z0-9](?:[A-Za-z0-9._%+\-]{0,63}[A-Za-z0-9_%+\-])?` +
+			`@` +
+			`[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?` +
+			`(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?)+$`)
+
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		if len(r.URL.Path) > 2048 || strings.Contains(r.URL.Path, "\x00") || strings.Contains(r.URL.Path, "..") {
+			log.Printf("Suspicious signup path: %q", r.URL.Path)
+			Render(w, http.StatusBadRequest)
+			return
+		}
+		if r.URL.Path != path.Clean(r.URL.Path) {
+			Render(w, http.StatusBadRequest)
+			return
+		}
+
+		// --- Method Validation ---
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			Render(w, http.StatusMethodNotAllowed)
 			return
 		}
 
+		// --- GET Method ---
 		if r.Method == http.MethodGet {
 			if err := templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": ""}); err != nil {
+				log.Printf("Template render error (GET /signup): %v", err)
 				Render(w, http.StatusInternalServerError)
 			}
 			return
 		}
 
+		// --- POST Method ---
 		if err := r.ParseForm(); err != nil {
 			Render(w, http.StatusBadRequest)
 			return
@@ -56,9 +77,9 @@ func SignupHandler(DB *sql.DB) http.HandlerFunc {
 		}
 
 		var exists int
-		err := DB.QueryRow("SELECT COUNT(1) FROM users WHERE email = ?", email).Scan(&exists)
-		if err != nil {
-			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Database error"})
+		if err := DB.QueryRow("SELECT COUNT(1) FROM users WHERE email = ?", email).Scan(&exists); err != nil {
+			log.Printf("DB error (email check): %v", err)
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 		if exists > 0 {
@@ -68,44 +89,51 @@ func SignupHandler(DB *sql.DB) http.HandlerFunc {
 
 		hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
-			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Server error"})
+			log.Printf("Password hash error: %v", err)
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 
 		tx, err := DB.Begin()
 		if err != nil {
-			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Server error"})
+			log.Printf("DB transaction start error: %v", err)
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 		defer tx.Rollback()
 
 		res, err := tx.Exec("INSERT INTO users (username, email, password_hash, created_at) VALUES (?, ?, ?, datetime('now'))", username, email, string(hash))
 		if err != nil {
-			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Error creating user"})
+			log.Printf("Insert user error: %v", err)
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 
 		userID, err := res.LastInsertId()
 		if err != nil {
-			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Server error"})
+			log.Printf("Get LastInsertId error: %v", err)
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 
 		token := generateRandomToken()
 		if token == "" {
-			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Failed to generate session token"})
+			log.Printf("Token generation failed")
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 		exp := time.Now().Add(24 * time.Hour)
 
 		_, err = tx.Exec("INSERT INTO sessions(token, user_id, expires_at) VALUES (?, ?, ?)", token, userID, exp.Format("2006-01-02 15:04:05"))
 		if err != nil {
-			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Error creating session"})
+			log.Printf("Insert session error: %v", err)
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 
 		if err := tx.Commit(); err != nil {
-			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Server error"})
+			log.Printf("DB commit error: %v", err)
+			Render(w, http.StatusInternalServerError)
 			return
 		}
 

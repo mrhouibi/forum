@@ -26,6 +26,7 @@ type PostPageData struct {
 func Handler(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
+			Render(w, http.StatusNotFound)
 			return
 		} else if r.Method != http.MethodGet {
 			return

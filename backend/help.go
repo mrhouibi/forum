@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 )
 
@@ -163,27 +164,35 @@ func GetComment(DB *sql.DB, PostId int) []DataComment {
 
 func Render(w http.ResponseWriter, status int) {
 	tmp, err := template.ParseFiles("templates/errorpage.html")
-	w.WriteHeader(status)
 	if err != nil {
-		http.Error(w, "page not found", http.StatusNotFound)
+		http.Error(w, "Template not found", http.StatusInternalServerError)
 		return
 	}
+
 	message := ""
 	switch status {
 	case 400:
 		message = "Bad Request."
+	case 403:
+		message = "Access denied: you don’t have permission to view this resource."
 	case 404:
 		message = "Not Found."
 	case 405:
-		message = "Status Method Not Allowed."
-	case 403:
-		message = "Access denied: you don’t have permission to view this resource."
+		message = "Method Not Allowed."
 	default:
-		message = "Status Internal Server Error"
+		message = "Internal Server Error"
 	}
+
 	mes := Message_Error{
 		Status:  status,
 		Message: message,
 	}
-	tmp.Execute(w, mes)
+
+	w.WriteHeader(status)
+
+	if err := tmp.Execute(w, mes); err != nil {
+		log.Println("Error rendering template:", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		return
+	}
 }
