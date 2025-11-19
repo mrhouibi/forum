@@ -14,7 +14,6 @@ import (
 func LoginHandler(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// --- URL Validation ---
-
 		if len(r.URL.Path) > 2048 || strings.Contains(r.URL.Path, "\x00") || strings.Contains(r.URL.Path, "..") {
 			log.Printf("Suspicious login path: %q", r.URL.Path)
 			Render(w, http.StatusBadRequest)
@@ -23,17 +22,6 @@ func LoginHandler(DB *sql.DB) http.HandlerFunc {
 		if r.URL.Path != path.Clean(r.URL.Path) {
 			Render(w, http.StatusBadRequest)
 			return
-		}
-
-		// --- Session Check ---
-		cookie, err := r.Cookie("session_token")
-		if err == nil {
-			var userID int64
-			err := DB.QueryRow("SELECT user_id FROM sessions WHERE token = ? AND expires_at > datetime('now')", cookie.Value).Scan(&userID)
-			if err == nil {
-				http.Redirect(w, r, "/post", http.StatusSeeOther)
-				return
-			}
 		}
 
 		// --- Method Validation ---
@@ -65,11 +53,9 @@ func LoginHandler(DB *sql.DB) http.HandlerFunc {
 
 		var userID int64
 		var passwordHash string
-		err = DB.QueryRow("SELECT id, password_hash FROM users WHERE email = ? OR username = ?", email, email).Scan(&userID, &passwordHash)
+		err := DB.QueryRow("SELECT id, password_hash FROM users WHERE email = ? OR username = ?", email, email).Scan(&userID, &passwordHash)
 		if err == sql.ErrNoRows {
-
 			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Invalid email or password"})
-			
 			return
 		}
 		if err != nil {
@@ -77,11 +63,13 @@ func LoginHandler(DB *sql.DB) http.HandlerFunc {
 			Render(w, http.StatusInternalServerError)
 			return
 		}
+
 		if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)); err != nil {
 			templates.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Invalid email or password"})
 			return
 		}
 
+		// --- Create Session ---
 		token := generateRandomToken()
 		if token == "" {
 			log.Printf("Token generation failed")
@@ -90,7 +78,23 @@ func LoginHandler(DB *sql.DB) http.HandlerFunc {
 		}
 		exp := time.Now().Add(24 * time.Hour)
 
-		_, err = DB.Exec("INSERT INTO sessions(token, user_id, expires_at) VALUES (?, ?, ?)", token, userID, exp.Format("2006-01-02 15:04:05"))
+		_, err = DB.Exec("DELETE FROM sessions WHERE user_id = ?", userID)
+		if err != nil {
+			log.Printf("Failed to remove old sessions: %v", err)
+			Render(w, http.StatusInternalServerError)
+			return
+		}
+
+		_, err = DB.Exec(
+			"INSERT INTO sessions(token, user_id, expires_at) VALUES (?, ?, ?)",
+			token, userID, exp.Format("2006-01-02 15:04:05"),
+		)
+		if err != nil {
+			log.Printf("Insert session error: %v", err)
+			Render(w, http.StatusInternalServerError)
+			return
+		}
+
 		if err != nil {
 			log.Printf("Insert session error: %v", err)
 			Render(w, http.StatusInternalServerError)

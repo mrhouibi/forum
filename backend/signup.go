@@ -63,14 +63,17 @@ func SignupHandler(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 		if !emailRe.MatchString(email) {
+			w.WriteHeader(http.StatusNonAuthoritativeInfo)
 			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Invalid email"})
 			return
 		}
 		if !usernameRe.MatchString(username) {
+			w.WriteHeader(http.StatusNonAuthoritativeInfo)
 			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Invalid username"})
 			return
 		}
 		if len(password) < 8 {
+			w.WriteHeader(http.StatusNonAuthoritativeInfo)
 			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Password must be >= 8 chars"})
 			return
 		}
@@ -82,7 +85,19 @@ func SignupHandler(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 		if exists > 0 {
+			w.WriteHeader(http.StatusNonAuthoritativeInfo)
 			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Email already taken"})
+			return
+		}
+		var usernameExists int
+		if err := DB.QueryRow("SELECT COUNT(1) FROM users WHERE username = ?", username).Scan(&usernameExists); err != nil {
+			log.Printf("DB error (username check): %v", err)
+			Render(w, http.StatusInternalServerError)
+			return
+		}
+		if usernameExists > 0 {
+			w.WriteHeader(http.StatusNonAuthoritativeInfo)
+			templates.ExecuteTemplate(w, "signup.html", map[string]string{"Error": "Username already taken"})
 			return
 		}
 
